@@ -30,9 +30,11 @@
         $board = $thisBoard->allBlocks();
 
         $allPlayers = new Players();
+        $plCount = 1;
         foreach($thesePlayers as $player) {
             $thisPlayer = $allPlayers->thisPlayer($player);
             $currentPlayers[] = $thisPlayer;
+            $plCount++;
         }
 
         $thisGame->start($thesePlayers);
@@ -44,30 +46,61 @@
 
         $roundCount = 1;
         $turnCount = 1;
-        $playerCount = count($currentPlayers);
-        $ownershipArray = [];
-        $ownershipArray['player']['owns'] = [];
+        $participantCount = 1;
+//        $playerCount = count($currentPlayers);
+//        $ownershipArray = $currentPlayers;
+//        $ownershipArray = [];
+//        $ownershipArray['owns'] = [];
         $owned = '';
 
         // Start Game Iteration
         echo '<div class="ui blue message">Starting</div>';
-        while($playerCount > 1) {
+        while($plCount > 1) {
+            echo 'Turn ' . $turnCount;
             foreach ($currentPlayers as $player) {
-                $ownershipArray['player'] = $player;
+                if ($participantCount > $plCount -1) {
+                    $participantCount = 1;
+                }
+
+                $ownershipArray[$participantCount] = $player['name'];
+
                 $rolled = $thisGame->roll();
 
-                $move = $thisGame->move($previous, $rolled, $player, $balance);
+                $move = $thisGame->move($previous, $rolled, $player, $participantCount, $balance);
 
-                while ($ownershipArray['player'] != $player) {
-                    if (in_array($move['tileNum'], $ownershipArray['player']['owns'])) {
-                        $propValue = $thisBoard[$move['tileNum']];
-                        $charge = $propValue['2'] / 10;
-                        $balance = $balance - $charge;
-                        echo '<a class="ui red tag label">Pay Up ' . $charge . '</a>';
+                // Display move results
+                echo '<br>
+                <div class="ui large label">' . $move['name'] . '</div> rolled 
+                <div class="ui label">' . $rolled . '</div> and is moving to 
+                <div class="ui ' . $move['position'][3] . ' label">' . print_r($move['position'][0], true) . '</div> with value of
+                <div class="ui label">' . print_r($move['position'][2], true) . '</div>';
+
+                $balance = $move['balance'];
+
+                echo '<br><div class="ui label">' . $move['name'] . '</div> balance is <div class="ui label">' . $move['balance'] . '</div>';
+
+                if(!empty($move['msg'])) {
+                    echo '<div style="text-align:right">' . $move['msg'] . '</div>';
+                }
+
+                // Add property to Players' portfolio except for these below
+                $notForSaleTile = [3, 5, 8, 11, 18, 21, 23, 31, 34, 37, 39];
+                if (!in_array($move['tileNum'], $notForSaleTile)) {
+                    echo '<br><div style="text-align:center">' . $move['name'] . ' now Owns ' . $move['position'][0] . '</div>';
+                }
+
+                // Build Onwership Array of who owns what
+                $ownershipArray[] = ['owner' => $move['name'], 'tile' => $move['tileNum']];
+
+                if (!empty($ownershipArray['tile'])) {
+                    while (!in_array($move['tileNum'], $ownershipArray['tile'])) {
+                        $ownershipArray[] = ['owner' => $move['name'], 'tile' => $move['tileNum']];
                     }
                 }
 
+                // If Player passes GO
                 if ($move['tileNum'] >= 39) {
+                    echo '<div class="ui divider"></div>';
                     echo '<div style="text-align:right"><a class="ui teal tag label">Passing GO</a>';
                     echo '<br>' . $move['name'] . ' gets 200!</div>';
                     $balance = $move['balance'] + 200;
@@ -76,35 +109,42 @@
                     $previous = $move['tileNum'];
                 }
 
-                echo '<br>
-                <div class="ui large label">' . $move['name'] . '</div> rolled 
-                <div class="ui label">' . $rolled . '</div> and is moving to 
-                <div class="ui ' . $move['position'][3] . ' label">' . print_r($move['position'][0], true) . '</div> with value of
-                <div class="ui label">' . print_r($move['position'][2], true) . '</div>';
-                if(!empty($move['msg'])) {
-                    echo '<div style="text-align:right">' . $move['msg'] . '</div>';
+                // If a player lands on an Property owned by another player
+                while ($ownershipArray['tile'] != '') {
+                    foreach ($ownershipArray as $title) {
+                        if ($move['tileNum'] == $title['tile']) {
+                            if ($title['owner'] != $move['name']) {
+                                $tileValue = $move['position'][2];
+                                $propValue = $tileValue / 10;
+                                $balance = $balance - $propValue;
+                                echo $move['name'] . ' paid tax of ' . $propValue;
+                            }
+                        }
+                    }
                 }
 
-                $owned.= $move['tileNum'] . ',';
-
-                if ($ownershipArray['player']['name'] == $move['name']) {
-                    $ownershipArray['player']['owns'] = array($owned);
-                }
-
-                $balance = $move['balance'];
-
-                echo '<br><div class="ui label">' . $move['name'] . '</div> balance is <div class="ui label">' . $move['balance'] . '</div>';
+//                while (!empty($ownershipArray['owner'])) {
+//                    while ($ownershipArray['owner'] != $move['name']) {
+//                        if (in_array($move['tileNum'], $ownershipArray['tile'])) {
+//                            $propValue = $board($move['tileNum']) / 10;
+//                            $balance = $balance - $propValue;
+//                            echo $move['name'] . ' must pay ' . $propValue;
+//                        }
+//                    }
+//                }
 
                 echo '<div class="ui divider"></div>';
 
-                var_dump($ownershipArray);
-
                 if ($move['balance'] <= 0) {
                     echo '<div class="ui red message">' . $move['name'] . ' loses</div><br/>';
-                    unset($currentPlayers[$playerCount]);
-                    $playerCount--;
+                    unset($currentPlayers[$plCount]);
+                    $plCount--;
+                    if ($plCount < 2) {
+                        break;
+                    }
                 }
                 $turnCount++;
+                $participantCount++;
             }
             $roundCount++;
         }

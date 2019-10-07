@@ -16,7 +16,8 @@ class Game {
         return $result;
     }
 
-    public function move($previous,$rolled, $player, $balance) {
+    public function move($previous,$rolled, $player, $plCount, $balance) {
+//        echo '<br>' . __METHOD__, print_r(func_get_args(), true);
         $thisBoard = new Board();
         $pos = $previous + $rolled;
         $boardPosition = $thisBoard->allBlocks();
@@ -74,6 +75,8 @@ class Game {
         }
 
         $thisPlayer = ['name' => $player['name'], 'balance' => $balance, 'position' => $next, 'tileNum' => $pos, 'colour' => @$colour, 'msg' => @$msg];
+
+//        echo 'Sending: ' . print_r($thisPlayer, true);
         return $thisPlayer;
     }
 
