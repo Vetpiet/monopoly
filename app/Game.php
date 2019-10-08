@@ -53,10 +53,19 @@ class Game {
             $msg = '<div class="ui red tag label">Go Directly to JAIL. Do not pass GO. Do Not Collect 200</div>';
         }
 
-        // On Landing on the Jail - Just Visiting Tile
-        if ($pos == 11) {
-            $msg = '<div class="ui green tag label">Just Visiting</div>';
-        }
+//        // On passing Go
+//        if ($pos + $rolled > 39) {
+//            $balance = $balance + 200;
+//            $pos = $pos -40;
+//            $msg = '<div class="ui divider"></div>
+//                    <div style="text-align:right"><a class="ui teal tag label">Passing GO</a>
+//                    <br>' . $player['name'] . ' gets 200!</div>';
+//        }
+
+//        // On Landing on the Jail - Just Visiting Tile
+//        if ($pos == 11) {
+//            $msg = '<div class="ui green tag label">Just Visiting</div>';
+//        }
 
         // On Landing on any Railway Station
         $railwayTiles = [6, 16, 26, 36];

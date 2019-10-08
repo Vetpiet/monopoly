@@ -45,7 +45,7 @@
         $balance = $startingBal;
 
         $roundCount = 1;
-        $turnCount = 1;
+//        $turnCount = 1;
         $participantCount = 1;
 //        $playerCount = count($currentPlayers);
 //        $ownershipArray = $currentPlayers;
@@ -56,7 +56,6 @@
         // Start Game Iteration
         echo '<div class="ui blue message">Starting</div>';
         while($plCount > 1) {
-            echo 'Turn ' . $turnCount;
             foreach ($currentPlayers as $player) {
                 if ($participantCount > $plCount -1) {
                     $participantCount = 1;
@@ -104,7 +103,7 @@
                     echo '<div style="text-align:right"><a class="ui teal tag label">Passing GO</a>';
                     echo '<br>' . $move['name'] . ' gets 200!</div>';
                     $balance = $move['balance'] + 200;
-                    $previous = 0;
+                    $previous = $move['tileNum'] - 40;
                 } else {
                     $previous = $move['tileNum'];
                 }
@@ -123,16 +122,6 @@
                     }
                 }
 
-//                while (!empty($ownershipArray['owner'])) {
-//                    while ($ownershipArray['owner'] != $move['name']) {
-//                        if (in_array($move['tileNum'], $ownershipArray['tile'])) {
-//                            $propValue = $board($move['tileNum']) / 10;
-//                            $balance = $balance - $propValue;
-//                            echo $move['name'] . ' must pay ' . $propValue;
-//                        }
-//                    }
-//                }
-
                 echo '<div class="ui divider"></div>';
 
                 if ($move['balance'] <= 0) {
@@ -143,7 +132,6 @@
                         break;
                     }
                 }
-                $turnCount++;
                 $participantCount++;
             }
             $roundCount++;
